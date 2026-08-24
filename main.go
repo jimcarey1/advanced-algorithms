@@ -3,27 +3,31 @@ package main
 import (
 	"fmt"
 
-	"github.com/jimcarey1/advanced_algorithms/btree"
+	"github.com/jimcarey1/advanced_algorithms/lists"
 )
 
 func main() {
-	btree := btree.Constructor(4)
-	btree.Insert(155)
-	btree.Insert(585)
-	btree.Insert(748)
-	btree.Insert(781)
-	btree.Insert(373)
-	btree.Insert(480)
-	btree.Insert(797)
-	btree.Insert(838)
-	btree.Insert(743)
-	fmt.Println(btree.Root.Keys)
-	fmt.Println(btree.Root.Children[0].Keys)
-	fmt.Println(btree.Root.Children[1].Keys)
-	fmt.Println(btree.Root.Children[2].Keys)
-	node := btree.Root.Children[0]
+	skipList := lists.NewSkipList()
+	skipList.Insert(100)
+	PrintSkipList(skipList)
+	skipList.Insert(90)
+	PrintSkipList(skipList)
+	skipList.Insert(80)
+	PrintSkipList(skipList)
+}
+
+func PrintLevel(node *lists.Node){
+	node = node.Next
 	for node != nil{
-		fmt.Println(node.Keys)
-		node = node.NextSibling
+		fmt.Printf("%d->", node.Val)
+		node = node.Next
 	}
+	fmt.Println()
+}
+
+func PrintSkipList(list *lists.SkipList){
+	for _, node := range list.Levels{
+		PrintLevel(node)
+	}
+	fmt.Println()
 }
