@@ -14,6 +14,17 @@ func main() {
 	PrintSkipList(skipList)
 	skipList.Insert(80)
 	PrintSkipList(skipList)
+	skipList.Insert(70)
+	PrintSkipList(skipList)
+	skipList.Insert(60)
+	PrintSkipList(skipList)
+	skipList.Insert(50)
+	PrintSkipList(skipList)
+	skipList.Insert(40)
+	PrintSkipList(skipList)
+	skipList.Insert(40)
+	fmt.Printf("The code is reaching this line.")
+	PrintSkipList(skipList)
 }
 
 func PrintLevel(node *lists.Node){

@@ -1,6 +1,7 @@
 package lists
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
@@ -36,6 +37,11 @@ func (list *SkipList) AddNewLevel() {
 
 // This method adds a new value to the skip list.
 func (list *SkipList) Insert(val int) {
+	//If the skip list already has the value, skip the insertion process.
+	if list.Search(val) {
+		fmt.Printf("%d is already present in the list, skipping the insert op.\n", val)
+		return
+	}
 	trackPrevLevelSteps := []*Node{}
 	currentLevel := len(list.Levels) - 1
 	node := list.Levels[currentLevel]
@@ -104,7 +110,66 @@ func (list *SkipList) Insert(val int) {
 
 // This method removes a value from the skip list
 func (list *SkipList) Remove(val int) {
+	nodeToRemove := list.SearchBottom(val)
+	atLevel := 0
+	highestLevel := len(list.Levels)
+	if nodeToRemove == nil {
+		fmt.Printf("%d not in the list.\n", val)
+		return
+	}
+	for nodeToRemove.Up != nil && atLevel < highestLevel {
+		prevNode := nodeToRemove.Prev
+		nextNode := nodeToRemove.Next
+		prevNode.Next = nextNode
+		if nextNode != nil {
+			nextNode.Prev = nil
+		}
+		//We are moving to the new level.
+		nodeToRemove = nodeToRemove.Up
+		//If this is the only node that is present in the current list,
+		//We have to remove that level completely.
+		if list.Levels[atLevel].Next == nil {
+			if atLevel != 0 && highestLevel != 1 {
+				list.Levels[atLevel-1].Up = list.Levels[atLevel].Up
+			}
+			if atLevel+1 < highestLevel {
+				list.Levels[atLevel+1].Down = list.Levels[atLevel].Down
+			}
+			//TODO: We have to remove this level from the list by the index(atLevel)
+			highestLevel -= 1
+		} else {
+			atLevel += 1
+		}
+	}
+}
 
+// The reason why, I duplicated this function is because, When removing a node
+// in the list, We have to start from the bottom node and recursively remove the
+// top levels.(Which is not the case to search a value in the list.)
+func (list *SkipList) SearchBottom(val int) *Node {
+	currentLevel := len(list.Levels) - 1
+	node := list.Levels[currentLevel]
+	for currentLevel > 0 {
+		if node.Val == val {
+			node = node.Down
+			currentLevel = currentLevel - 1
+		} else {
+			if node.Next == nil && node.Next.Val > val {
+				node = node.Down
+				currentLevel = currentLevel - 1
+			} else if node.Next != nil || node.Next.Val <= val {
+				node = node.Next
+			}
+		}
+	}
+	for node != nil {
+		if node.Val == val {
+			return node
+		} else if node.Val > val {
+			return nil
+		}
+	}
+	return nil
 }
 
 // This method searches, if an element exists in the skip list.
@@ -115,17 +180,19 @@ func (list *SkipList) Search(val int) bool {
 		if node.Val == val {
 			return true
 		} else {
-			if node.Next != nil && node.Next.Val < val {
-				node = node.Next
-			} else if node.Next == nil || node.Next.Val > val {
+			if node.Next == nil || node.Next.Val > val {
 				node = node.Down
 				currentLevel = currentLevel - 1
+			} else if node.Next != nil && node.Next.Val <= val {
+				node = node.Next
 			}
 		}
 	}
 	for node != nil {
 		if node.Val == val {
 			return true
+		} else if node.Val > val {
+			return false
 		}
 		node = node.Next
 	}
