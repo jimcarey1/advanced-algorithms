@@ -67,7 +67,7 @@ func (list *SkipList) Insert(val int) {
 	if nextNode != nil {
 		nextNode.Prev = newNode
 	}
-
+	node = newNode
 	//Now, we have to randomize adding the node to upper levels.
 	//We will insert, as long as ShouldInsert is true.
 	var AtLevel int = 1 //Currently we are at level 1.
@@ -117,25 +117,27 @@ func (list *SkipList) Remove(val int) {
 		fmt.Printf("%d not in the list.\n", val)
 		return
 	}
-	for nodeToRemove.Up != nil && atLevel < highestLevel {
+	for nodeToRemove != nil && atLevel < highestLevel {
 		prevNode := nodeToRemove.Prev
 		nextNode := nodeToRemove.Next
 		prevNode.Next = nextNode
 		if nextNode != nil {
-			nextNode.Prev = nil
+			nextNode.Prev = prevNode
 		}
 		//We are moving to the new level.
 		nodeToRemove = nodeToRemove.Up
 		//If this is the only node that is present in the current list,
 		//We have to remove that level completely.
 		if list.Levels[atLevel].Next == nil {
-			if atLevel != 0 && highestLevel != 1 {
+			if atLevel != 0 && atLevel < highestLevel {
 				list.Levels[atLevel-1].Up = list.Levels[atLevel].Up
 			}
 			if atLevel+1 < highestLevel {
 				list.Levels[atLevel+1].Down = list.Levels[atLevel].Down
 			}
 			//TODO: We have to remove this level from the list by the index(atLevel)
+			//NOTE: We have to remove the element inplace.
+			list.Levels = remove(list.Levels, atLevel)
 			highestLevel -= 1
 		} else {
 			atLevel += 1
@@ -154,10 +156,10 @@ func (list *SkipList) SearchBottom(val int) *Node {
 			node = node.Down
 			currentLevel = currentLevel - 1
 		} else {
-			if node.Next == nil && node.Next.Val > val {
+			if node.Next == nil || node.Next.Val > val {
 				node = node.Down
 				currentLevel = currentLevel - 1
-			} else if node.Next != nil || node.Next.Val <= val {
+			} else if node.Next != nil && node.Next.Val <= val {
 				node = node.Next
 			}
 		}
@@ -168,6 +170,7 @@ func (list *SkipList) SearchBottom(val int) *Node {
 		} else if node.Val > val {
 			return nil
 		}
+		node = node.Next
 	}
 	return nil
 }
@@ -203,4 +206,10 @@ func (list *SkipList) Search(val int) bool {
 func ShouldInsert() bool {
 	randomValue := rand.Uint32()
 	return randomValue%2 == 0
+}
+
+func remove[T any](s []*T, i int) []*T {
+    copy(s[i:], s[i+1:])
+    s[len(s)-1] = nil // allow GC to reclaim the object
+    return s[:len(s)-1]
 }

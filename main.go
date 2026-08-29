@@ -22,22 +22,22 @@ func main() {
 	PrintSkipList(skipList)
 	skipList.Insert(40)
 	PrintSkipList(skipList)
-	skipList.Insert(40)
-	fmt.Printf("The code is reaching this line.")
+
+	skipList.Remove(40)
 	PrintSkipList(skipList)
 }
 
-func PrintLevel(node *lists.Node){
+func PrintLevel(node *lists.Node) {
 	node = node.Next
-	for node != nil{
+	for node != nil {
 		fmt.Printf("%d->", node.Val)
 		node = node.Next
 	}
 	fmt.Println()
 }
 
-func PrintSkipList(list *lists.SkipList){
-	for _, node := range list.Levels{
+func PrintSkipList(list *lists.SkipList) {
+	for _, node := range list.Levels {
 		PrintLevel(node)
 	}
 	fmt.Println()
